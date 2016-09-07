@@ -1,0 +1,47 @@
+Vagrant.configure(2) do |config|
+  config.vm.network :public_network
+  #config.vm.box = "alonsodomin/ubuntu-trusty64-java8"
+    
+  config.vm.define "jenkins" do |jenkins|
+    jenkins.vm.box = "alonsodomin/ubuntu-trusty64-java8"
+    jenkins.vm.network "private_network", ip: "192.168.42.10"
+    jenkins.vm.network "forwarded_port", guest: 8080, host: 18080
+    jenkins.vm.provider "virtualbox" do |vm|
+      vm.customize [
+                     'modifyvm', :id,
+                     '--memory', '2048',
+                     '--cpus', '2',
+                 ]
+    end
+    # ansible provisioning
+    jenkins.vm.provision "ansible" do |ansible|
+      ansible.groups = {
+        'ci-server' => ['default']
+      }
+      ansible.playbook = "configure-jenkins-server.yml"
+      ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+      ansible.sudo = true
+      #ansible.verbose = 'v'
+    end
+  end
+
+  config.vm.define "app" do |app| 
+    app.vm.box = "alonsodomin/ubuntu-trusty64-java8"
+    app.vm.network "private_network", ip: "192.168.42.11"
+
+    app.vm.provider "virtualbox" do |vm|
+      vm.customize [
+                     'modifyvm', :id,
+                     '--memory', '512'
+                 ]
+    end
+    # ansible provisioning
+    app.vm.provision "ansible" do |ansible|
+      ansible.playbook = "configure-app-server.yml"
+      ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+      ansible.sudo = true
+      #ansible.verbose = 'v'
+    end
+  end
+  
+end

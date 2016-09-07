@@ -1,0 +1,52 @@
+---
+##
+# The Travis CI build for this project. Yes, it's ironic to build a Jenkins-
+# installation role with its competitor. But this is the best option, until 
+# this project is complete enough to be capable of dogfooding itself.
+##
+
+language: python
+python: "2.7"
+
+# Use a full VM (rather than a sudo-less container), as we need sudo access to
+# test this Ansible role.
+sudo: required
+
+# Install ansible
+addons:
+  apt:
+    packages:
+    - python-pip
+
+install:
+  # Install Ansible and other required Python libraries.
+  - pip install -r tests/requirements.txt
+
+  # Check ansible version
+  - ansible --version
+
+  # Create ansible.cfg with correct roles_path
+  - printf '[defaults]\nroles_path=../' >ansible.cfg
+
+  # Install the additional Ansible roles that are required for testing this one.
+  - ansible-galaxy install -r tests/install_roles.yml
+
+script:
+  # Basic role syntax check
+  - ansible-playbook tests/tests-install.yml -i tests/inventory --syntax-check
+
+  # Run the role/playbook.
+  - "ansible-playbook tests/tests-install.yml -i tests/inventory --connection=local"
+
+  # Run the role/playbook again, checking to make sure it's idempotent.
+  - >
+    ansible-playbook tests/tests-install.yml -i tests/inventory --connection=local
+    | tee /dev/tty
+    | grep -q 'changed=0.*failed=0'
+    && (echo 'Idempotence test: pass' && exit 0)
+    || (echo 'Idempotence test: fail' && exit 1)
+  # Make sure Jenkins is running.
+  #- curl http://localhost:$HTTP_PORT/$PREFIX
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

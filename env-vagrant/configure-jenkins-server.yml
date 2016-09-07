@@ -1,0 +1,10 @@
+---
+- name: Configure jenkins server
+  hosts: all
+  sudo: True
+  vars:
+    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent']
+  roles:
+    - users
+    - git
+    - karlmdavis.jenkins2
