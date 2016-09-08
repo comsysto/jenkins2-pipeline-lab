@@ -18,7 +18,7 @@ node{
 }
 stage 'Manual Quality Gates'
 parallel(
-  "stream1" : {step 'UI Gate'
+  "stream1" : {step(UI Gate)
   input 'Everything fine?'
   //use following lines for user param input
   //def userInput = input(
@@ -29,7 +29,7 @@ parallel(
   },
   "stream2" : {
 
-  step 'Security Gate'
+  step(Security Gate)
     input 'Really?'
   }
 )
