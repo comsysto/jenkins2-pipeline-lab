@@ -23,8 +23,6 @@ stage 'Manual Quality Gates'
 
       step'UI Gate'
           input 'Really?'
-          
-)
 
 stage 'Deploy'
 node {
