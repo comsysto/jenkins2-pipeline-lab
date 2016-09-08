@@ -17,17 +17,13 @@ node{
    sh "./gradlew check"
 }
 stage 'Manual Quality Gates'
-    parallel(
-      "stream1" : {
 
-              input 'Everything fine?'
-        
-      },
-      "stream2" : {
+      step'Security Gate'
+          input 'Everything fine?'
 
+      step'UI Gate'
           input 'Really?'
-
-      }
+          
 )
 
 stage 'Deploy'
