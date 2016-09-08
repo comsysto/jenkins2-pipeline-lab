@@ -2,7 +2,7 @@
 
 stage 'Checkout'
 node {
-    git branch: 'feature/jenkins-poll-test', credentialsId: 'github-close2inifinity', url: 'https://github.com/Endron/dnd5-char-viewer.git'
+    git branch: 'feature/jenkins-poll-test', url: 'https://github.com/Endron/dnd5-char-viewer.git'
 }
 
 stage 'Build'
@@ -29,6 +29,6 @@ node {
 stage 'Test'
 node {
     timeout(time: 60, unit: 'SECONDS') {
-        sh 'until $(curl --silent --head --fail http://localhost:28080 > /dev/null); do printf \'.\'; sleep 5; done; curl http://localhost:28080 | grep \'ng-app="characterViewer"\''
+        sh 'until $(curl --silent --head --fail http://localhost:28080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://localhost:28080 | grep \'ng-app="characterViewer"\''
     }
 }
