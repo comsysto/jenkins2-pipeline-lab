@@ -7,13 +7,13 @@ node {
 
   stage("Build") {
     sh "./gradlew build"
-    publishHTML(target: [
+/*    publishHTML(target: [
             allowMissing         : false,
             alwaysLinkToLastBuild: true,
             keepAll              : false,
             reportDir            : 'build/reports/tests',
             reportFiles          : 'test/index.html',
-            reportName           : 'Unit tests report'])
+            reportName           : 'Unit tests report'])  */
   }
 
   stage("Deploy") {
