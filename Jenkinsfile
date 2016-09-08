@@ -22,3 +22,9 @@ node {
     sh "scp -v -o StrictHostKeyChecking=no -i ../../users/admin/jenkins-lab.pem build/libs/*.jar ubuntu@52.57.31.123:./"
     sh "ssh -v -o StrictHostKeyChecking=no -i ../../users/admin/jenkins-lab.pem ubuntu@52.57.31.123 'killall -9 java; echo \"java -jar *.jar \" | at now'"
 }
+stage 'Manual UI Gate'
+node  {
+	publishers {
+        	buildPipelineTrigger('deploy-cluster-1, deploy-cluster-2')
+	}
+}
