@@ -1,5 +1,10 @@
 # jenkins2-pipeline-lab
 
+### Prerequisites
+
+* vagrant
+* ansible 2.0.2 (! only works with this version)
+
 
 ### Setup your local environment
 
@@ -18,13 +23,14 @@ You need to choose your network for bridging.
 #### Configure Jenkins ssh-agent plugin
 
     * Goto: http://localhost:18080/credentials/store/system/domain/_/
+    * Configure jenkins credentials for ssh agent
+    ** TODOD
 
 
 ### Links & References
 
 * https://jenkins.io/solutions/pipeline/
 * https://dzone.com/refcardz/continuous-delivery-with-jenkins-workflow
-
 
 
 ### Jenkinsfile

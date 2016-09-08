@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # generate ssh configs for vagrant VMs
+mkdir ssh-config
 vagrant ssh-config app > ssh-config/app.config
 vagrant ssh-config jenkins > ssh-config/jenkins.config
 
