@@ -36,25 +36,30 @@ You need to choose your network for bridging.
 ### Jenkinsfile
 
 ```
-    stage 'Checkout'
-        node {
-           // Get some code from a GitHub repository
-           git url: 'https://github.com/Endron/dnd5-char-viewer.git'
-        }
+    def gitCommit
+    stage('Checkout')
+    node {
+        // Get some code from a GitHub repository
+        git url: 'https://github.com/Endron/dnd5-char-viewer.git'
+        sh 'git rev-parse HEAD > git.id'
+        gitCommit = readFile('git.id')
+    }
 
-    stage 'Build'
-
-        node {
-           sh "./gradlew clean build"
-        }
+    stage('Build') 
+    node {
+        def dockerTag = "localhost:5000/dndviewer:${gitCommit}"
+        
+        sh "./gradlew clean build"
+        sh "docker build . --tag ${dockerTag}"
+        sh "docker push ${dockerTag}"
+    }
 
     //checkpoint 'Completed CI'
 
-    stage 'Deploy'
-
-        node {
-            sshagent(['jenkins']) {
-                sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 uname -a'
-            }
+    stage ('Deploy') 
+    node {
+        sshagent(['jenkins']) {
+            sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 uname -a'
         }
+    }
 ```
