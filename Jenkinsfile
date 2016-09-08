@@ -1,8 +1,3 @@
-stage 'Checkout' 
-node {
-   // Get some code from a GitHub repository
-   git url: 'https://github.com/Endron/dnd5-char-viewer.git'
-}
 
 stage 'Build'
 node {
