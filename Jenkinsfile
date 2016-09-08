@@ -9,8 +9,14 @@ stage 'Build'
 node {
    def gradleHome = tool 'Gradle'
 
-   sh "./gradlew clean build"
+   sh "./gradlew clean assemble"
 }
+
+stage 'Test'
+node{
+   sh "./gradlew check"
+}
+
 stage 'Deploy'
 node {
     sh "scp -v -o StrictHostKeyChecking=no -i ../../users/admin/jenkins-lab.pem build/libs/*.jar ubuntu@52.57.31.123:./"
