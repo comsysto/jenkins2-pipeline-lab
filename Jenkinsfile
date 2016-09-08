@@ -1,3 +1,9 @@
+stage 'Checkout' 
+node {
+   // Get some code from a GitHub repository
+   git url: 'https://github.com/Endron/dnd5-char-viewer.git'
+   //checkout scm: [$class: 'GitSCM', branches: [[name: '*/ec2-env']], userRemoteConfigs: [[url: 'https://github.com/comsysto/jenkins2-pipeline-lab.git']]]
+}
 
 stage 'Build'
 node {
