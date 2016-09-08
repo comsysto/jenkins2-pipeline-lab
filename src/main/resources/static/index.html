@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="characterViewer">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Char-Viewer</title>
+
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.0/angular-material.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body ng-controller="AppController as app" layout="column">
+<md-toolbar layout="row">
+  <div class="md-toolbar-tools">
+    <md-button ng-click="app.toggleSidenav('left')" hide-gt-sm class="md-icon-button">
+      <i aria-label="Menu" class="fa fa-bars"></i>
+    </md-button>
+    <h1>
+      <a href="#/">DnD5 Character Viewer</a>
+    </h1>
+  </div>
+</md-toolbar>
+
+<div layout="row" flex>
+  <md-sidenav id="left" md-component-id="left" layout="column"
+              class="md-sidenav-left md-whiteframe-z2"
+              md-is-locked-open="$mdMedia('gt-sm')" ng-viewport="navigation">
+
+  </md-sidenav>
+  <div id="content" flex layout-fill ng-viewport="content">
+
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-aria.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-resource.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.0/angular-material.js"></script>
+<script src="webjars/angular-new-router/0.5.3/dist/router.es5.js"></script>
+
+<script src="services/character-service.js"></script>
+<script src="services/attribute-modifier-service.js"></script>
+<script src="services/dice-roller.js"></script>
+<script src="components/character-sheet/character-sheet-controller.js"></script>
+<script src="components/navigation/navigation-controller.js"></script>
+<script src="components/startpage/startpage.js"></script>
+<script src="filter/attribute-modifier-filter.js"></script>
+<script src="filter/add-plus-filter.js"></script>
+<script src="app/app.js"></script>
+</body>
+</html>

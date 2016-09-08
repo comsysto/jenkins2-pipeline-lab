@@ -1,0 +1,14 @@
+<md-list>
+  <md-list-item class="md-3-line">
+    <md-input-container class="md-list-item-text">
+      <label><i class="fa fa-search"></i> Search..</label>
+      <input type="text" ng-model="navigation.characterQuery"/>
+    </md-input-container>
+  </md-list-item>
+
+  <md-subheader>{{ navigation.characters.length }} Characters</md-subheader>
+  <md-list-item ng-repeat="character in navigation.characters | filter:navigation.characterQuery | orderBy:'name'"
+                ng-click="navigation.navigateTo(character)">
+    <p><i class="fa" ng-class="character.icon"></i> {{ character.name }}</p>
+  </md-list-item>
+</md-list>
