@@ -17,21 +17,15 @@ node{
    sh "./gradlew check"
 }
 stage 'Manual Quality Gates'
-parallel(
-  "stream1" : {step(UI Gate)
-  input 'Everything fine?'
-  //use following lines for user param input
-  //def userInput = input(
-  // id: 'userInput', message: 'Let\'s promote?', parameters: [
-  // [$class: 'TextParameterDefinition', defaultValue: 'uat', description: 'Environment', name: 'env']
-  //])
-  //echo ("Env: "+userInput)
-  },
-  "stream2" : {
-
-  step(Security Gate)
-    input 'Really?'
-  }
+    parallel(
+      "stream1" : {
+          step'UI Gate'
+          input 'Everything fine?'
+      },
+      "stream2" : {
+          step'Security Gate'
+          input 'Really?'
+      }
 )
 
 stage 'Deploy'
