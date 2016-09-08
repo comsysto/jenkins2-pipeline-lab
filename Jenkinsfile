@@ -1,3 +1,4 @@
+#!groovy​
 stage 'Checkout'
 node {
    // Get some code from a GitHub repository
@@ -17,12 +18,8 @@ node{
    sh "./gradlew check"
 }
 stage 'Manual Quality Gates'
-
-      step'Security Gate'
-          input 'Everything fine?'
-
-      step'UI Gate'
-          input 'Really?'
+    input 'Everything fine?'
+    input 'Really?'
 
 stage 'Deploy'
 node {
