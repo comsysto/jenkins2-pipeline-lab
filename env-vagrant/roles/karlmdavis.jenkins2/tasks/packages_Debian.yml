@@ -22,13 +22,13 @@
 
 - name: Jenkins APT Key
   apt_key:
-    url: "http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key"
+    url: "https://pkg.jenkins.io/debian/jenkins-ci.org.key"
     state: present
   become: true
 
 - name: Jenkins APT Repository
   apt_repository:
-    repo: "deb http://pkg.jenkins-ci.org/debian binary/"
+    repo: "deb http://pkg.jenkins.io/debian-stable binary/"
     state: present
     update_cache: yes
   become: true
