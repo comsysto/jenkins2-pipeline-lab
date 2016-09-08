@@ -19,14 +19,14 @@ node{
 stage 'Manual Quality Gates'
     parallel(
       "stream1" : {
-          node{
+
               input 'Everything fine?'
-          }
+        
       },
       "stream2" : {
-          node{
+
           input 'Really?'
-          }
+
       }
 )
 
