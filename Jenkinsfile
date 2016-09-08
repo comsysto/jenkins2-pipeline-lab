@@ -7,6 +7,13 @@ stage 'Build'
 node {
     def gradleHome = tool 'Gradle'
     sh "${gradleHome}/bin/gradle build"
+    publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: false,
+            reportDir: 'build/reports/tests',
+            reportFiles: 'test/index.html',
+            reportName: 'Unit tests report'])
 }
 
 stage 'Deploy'
