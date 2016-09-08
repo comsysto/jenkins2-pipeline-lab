@@ -2,7 +2,7 @@
 
 stage 'Checkout'
 node {
-    git branch: 'feature/jenkins-poll-test', url: 'https://github.com/Endron/dnd5-char-viewer.git'
+    git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
 }
 
 stage 'Build'
