@@ -16,17 +16,24 @@ stage 'Test'
 node{
    sh "./gradlew check"
 }
+parallel(
+  "stream1" : {stage 'Manual UI Gate'
+  input 'Everything fine?'
+  //use following lines for user param input
+  //def userInput = input(
+  // id: 'userInput', message: 'Let\'s promote?', parameters: [
+  // [$class: 'TextParameterDefinition', defaultValue: 'uat', description: 'Environment', name: 'env']
+  //])
+  //echo ("Env: "+userInput)
+  },{
+
+  stage 'Manual Security Gate'
+  input 'Really?'
+  }
+)
 
 stage 'Deploy'
 node {
     sh "scp -v -o StrictHostKeyChecking=no -i ../../users/admin/jenkins-lab.pem build/libs/*.jar ubuntu@52.57.31.123:./"
     sh "ssh -v -o StrictHostKeyChecking=no -i ../../users/admin/jenkins-lab.pem ubuntu@52.57.31.123 'killall -9 java; echo \"java -jar *.jar \" | at now'"
 }
-stage 'Manual UI Gate'
-input 'Everything fine?'
-//use following lines for user param input
-//def userInput = input(
-// id: 'userInput', message: 'Let\'s promote?', parameters: [
-// [$class: 'TextParameterDefinition', defaultValue: 'uat', description: 'Environment', name: 'env']
-//])
-//echo ("Env: "+userInput)
