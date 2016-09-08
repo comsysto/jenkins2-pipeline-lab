@@ -2,6 +2,8 @@
 - name: Configure app server
   hosts: all
   sudo: True
+  vars:
+    docker_group_members: ['vagrant']
   roles:
     - users
     - angstwad.docker_ubuntu
