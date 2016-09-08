@@ -83,6 +83,13 @@
     - Restart docker
   when: docker_opts != "" and ansible_distribution_version|version_compare(15.04, '>=')
 
+- name: Copy daemon.json
+  template:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+    - Restart docker
+
 - name: Fix DNS in docker.io
   lineinfile:
     dest: "{{ docker_defaults_file_path }}"
