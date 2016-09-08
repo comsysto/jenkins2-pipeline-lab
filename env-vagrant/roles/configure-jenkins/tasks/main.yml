@@ -1,0 +1,12 @@
+---
+  - name: List Credentials
+    shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} list-credentials system::system::jenkins"
+    register: credentials_list
+    changed_when: false
+
+  - name: Copy config files
+    copy: src=../credentials-jenkins-ci.xml dest=/etc/credentials-jenkins-ci.xml owner=jenkins
+
+  - name: Create new credentials for jenkins Plugins
+    shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} create-credentials-by-xml system::system::jenkins '(global)' <  /etc/credentials-jenkins-ci.xml"
+    when: credentials_list.stdout.find('jenkins-ci') == -1

@@ -3,11 +3,13 @@
   hosts: all
   sudo: True
   vars:
-    - jenkins_plugins_extra: ['cloudbees-folder','ssh-agent', 'htmlpublisher']
+    - jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step','htmlpublisher']
     - docker_group_members: ['jenkins', 'vagrant']
+
   roles:
     - users
     - git
     - karlmdavis.jenkins2
+    - configure-jenkins
     - angstwad.docker_ubuntu
     - docker_registry
