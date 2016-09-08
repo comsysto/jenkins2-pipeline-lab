@@ -19,12 +19,14 @@ node{
 stage 'Manual Quality Gates'
     parallel(
       "stream1" : {
-          step'UI Gate'
-          input 'Everything fine?'
+          node('UI Gate'){
+              input 'Everything fine?'
+          }
       },
       "stream2" : {
-          step'Security Gate'
+          node('Security Gate'){
           input 'Really?'
+          }
       }
 )
 
