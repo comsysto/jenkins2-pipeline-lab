@@ -7,4 +7,5 @@
   roles:
     - users
     - git
+    - angstwad.docker_ubuntu
     - karlmdavis.jenkins2
