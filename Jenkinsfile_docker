@@ -9,7 +9,7 @@ node {
   def appServerName = '192.168.42.11'
 
   stage("Checkout") {
-    git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
+    git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
 
     /*
      * As the current version of the plugin does not grant us direct access to
@@ -47,7 +47,7 @@ node {
   def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
     sshagent(credentials: credentials) {
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
-  
+
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
@@ -57,7 +57,7 @@ node {
   stage("Deploy") {
     def credentials = ['jenkins-ci']
     def appPort = '8080'
-   
+
     def containers = [
         [name: 'dndViewer01', serverPort: '8081'],
         [name: 'dndViewer02', serverPort: '8082'],
@@ -71,7 +71,7 @@ node {
   def checkEndpoint = { String url ->
     timeout(time: 30, unit: 'SECONDS') {
       sh "until \$(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl ${url} | grep \'ng-app=\"characterViewer\"\'"
-    }  
+    }
   }
 
   stage("Smoke-Test") {
