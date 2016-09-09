@@ -1,12 +1,12 @@
 #!groovy
 node {
-  stage("CI - Build & Unit Test") {
+  stage("[COMMIT] Build+UnitTest") {
     git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
     sh "./gradlew clean build"
     junit '**/build/test-results/*/*.xml'
   }
 
-  stage("DEV - Deploy") {
+  stage("[DEVELOPMENT] Deployment") {
 
     sshagent(credentials: ['jenkins-ci']) {
       sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 mkdir -p dnd5-char-viewer'
@@ -15,7 +15,7 @@ node {
     }
   }
 
-  stage("DEV - Smoke Test") {
+  stage("[DEVELOPMENT] SmokeTest") {
     timeout(time: 60, unit: 'SECONDS') {
       sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
     }
@@ -23,7 +23,7 @@ node {
 
   // TODO stage as manual quality gate before production deployment
 
-  stage("PROD - Deploy") {
+  stage("[PRODUCTION] Deployment") {
 
     sshagent(credentials: ['jenkins-ci']) {
       sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.12 mkdir -p dnd5-char-viewer'
@@ -32,7 +32,7 @@ node {
     }
   }
 
-  stage("PROD - Smoke Test") {
+  stage("[PRODUCTION] SmokeTest") {
     timeout(time: 60, unit: 'SECONDS') {
       sh 'until $(curl --silent --head --fail http://192.168.42.12:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.12:8080 | grep \'ng-app="characterViewer"\''
     }
