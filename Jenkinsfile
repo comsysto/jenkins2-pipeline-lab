@@ -1,34 +1,39 @@
-stage 'Checkout' {
+#!groovy
+node {
+
+  stage("Checkout") {
     git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
-}
+  }
 
-stage 'Build' {
-    def gradleHome = tool 'Gradle'
-    sh "${gradleHome}/bin/gradle build"
-    publishHTML(target: [
-            allowMissing: false,
+  stage("Build") {
+    sh "./gradlew build"
+/*    publishHTML(target: [
+            allowMissing         : false,
             alwaysLinkToLastBuild: true,
-            keepAll: false,
-            reportDir: 'build/reports/tests',
-            reportFiles: 'test/index.html',
-            reportName: 'Unit tests report'])
-}
+            keepAll              : false,
+            reportDir            : 'build/reports/tests',
+            reportFiles          : 'test/index.html',
+            reportName           : 'Unit tests report'])  */
+  }
 
-stage 'Deploy' {
-    sshagent(credentials: ['vagrant']) {
-        sh 'ssh -o StrictHostKeyChecking=no -p 2222 -l vagrant localhost mkdir -p dnd5-char-viewer'
-        sh 'scp -o StrictHostKeyChecking=no -P 2222 build/libs/dnd5-char-viewer.jar vagrant@localhost:dnd5-char-viewer/'
-    }
-}
+  stage("Deploy") {
 
-stage 'Run' {
-    sshagent(credentials: ['vagrant']) {
-        sh 'ssh -o StrictHostKeyChecking=no -p 2222 -l vagrant localhost "cd ./dnd5-char-viewer; killall -9 java; java -jar dnd5-char-viewer.jar 2>> /dev/null >> /dev/null &"'
+    sshagent(credentials: ['jenkins-ci']) {
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 mkdir -p dnd5-char-viewer'
+      sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.11:dnd5-char-viewer/'
     }
-}
+  }
 
-stage 'Smoke-Test' {
-    timeout(time: 60, unit: 'SECONDS') {
-        sh 'until $(curl --silent --head --fail http://localhost:28080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://localhost:28080 | grep \'ng-app="characterViewer"\''
+  stage("Run") {
+    sshagent(credentials: ['jenkins-ci']) {
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
+
     }
+  }
+
+  stage("Smoke-Test") {
+    timeout(time: 30, unit: 'SECONDS') {
+      sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
+    }
+  }
 }
