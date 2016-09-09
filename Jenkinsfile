@@ -5,6 +5,8 @@ node {
    * We will use the git commit id as a unique identifier for our current build.
    */
   String gitCommitId
+  def jenkinsServerName = '192.168.42.10'
+  def appServerName = '192.168.42.11'
 
   stage("Checkout") {
     git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
@@ -18,7 +20,6 @@ node {
     gitCommitId = readFile('git.id')
   }
 
-  def jenkinsServerName = '192.168.42.10'
   def dockerRegistryPort = '5000'
   def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(0, 5)}"
 
@@ -36,6 +37,13 @@ node {
             reportName           : 'Unit tests report'])  */
   }
 
+  /*
+   * Closure used to switch out the current running container with the newer version.
+   * This is a very basic workflow that assumes that the names of the Docker containers
+   * are static so we can just stop the pre-existing container and replace it with a
+   * new container with the same name. This does mean we do not support fancy stuff
+   * like scalling the application. For this we would need a more advanced script.
+   */
   def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
     sshagent(credentials: credentials) {
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
@@ -47,19 +55,17 @@ node {
   }
 
   stage("Deploy") {
-    def serverName = '192.168.42.11'
     def credentials = ['jenkins-ci']
     def appPort = '8080'
    
-   def containers = [
-     [name: 'dndViewer01', serverPort: '8081'],
-     [name: 'dndViewer02', serverPort: '8082'],
-     [name: 'dndViewer03', serverPort: '8083']
-   ]
-   for (def container : containers) {
-     switchContainer(serverName, credentials, container.name, dockerImage, appPort, container.serverPort)
-   }
-
+    def containers = [
+        [name: 'dndViewer01', serverPort: '8081'],
+        [name: 'dndViewer02', serverPort: '8082'],
+        [name: 'dndViewer03', serverPort: '8083']
+    ]
+    for (def container : containers) {
+      switchContainer(appServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
+    }
   }
 
   def checkEndpoint = { String url ->
@@ -69,6 +75,13 @@ node {
   }
 
   stage("Smoke-Test") {
-    checkEndpoint('http://192.168.42.11:8081')
+    def endpoints = [
+        "http://${appServerName}:8081",
+        "http://${appServerName}:8082",
+        "http://${appServerName}:8083"
+    ]
+    for (def endpoint : endpoints) {
+      checkEndpoint(endpoint)
+    }
   }
 }
