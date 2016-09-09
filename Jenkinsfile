@@ -43,8 +43,8 @@ node {
     sshagent(credentials: ['jenkins-ci']) {
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerTag}"
 
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName}"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort}"
     }
   }
