@@ -83,6 +83,11 @@
     - Restart docker
   when: docker_opts != "" and ansible_distribution_version|version_compare(15.04, '>=')
 
+- name: create /etc/docker
+  file:
+    path: /etc/docker
+    state: directory
+
 - name: Copy daemon.json
   template:
     src: daemon.json
