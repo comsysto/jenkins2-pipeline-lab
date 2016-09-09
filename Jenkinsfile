@@ -21,7 +21,9 @@ node {
     }
   }
 
-  // TODO stage as manual quality gate before production deployment
+  stage("[DEVELOPMENT] Manual UI Test") {
+    input "Continue with production deployment?"
+  }
 
   stage("[PRODUCTION] Deployment") {
 
