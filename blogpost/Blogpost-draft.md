@@ -31,7 +31,9 @@
     Another big advantage of the pipeline plugin is that in enables the "Pipeline as Code" feature. Instead of defining the
     single workflow steps through the Jenkins UI, the whole configuration process can be done in single file (called Jenkinsfile)
     using a Pipeline DSL (domain specific language), which is based on Groovy. The Jenkinsfile can then simply be checked
-    into the repository. Two main advantages of the this "Pipeline as Code" approach are the
+    into the repository. Two main advantages of the this "Pipeline as Code" approach are:
+        1) revisioning of the pipline
+        2) build chain can easily be manipulated without touching the Jekins UI
 
 * Transition text to Pipeline using Docker + Pipeline using jar/spring-boot
 
