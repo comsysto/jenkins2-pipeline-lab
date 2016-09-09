@@ -51,14 +51,15 @@ node {
     def credentials = ['jenkins-ci']
     def appPort = '8080'
    
-   [
+   def containers = [
      [name: 'dndViewer01', serverPort: '8081'],
      [name: 'dndViewer02', serverPort: '8082'],
      [name: 'dndViewer03', serverPort: '8083']
-   ].each {
-     switchContainer(serverName, credentials, it.name, dockerImage, appPort, it.appPort)
-    
-  }
+   ]
+
+   for (def containter : containers) {
+     switchContainer(serverName, credentials, container.name, dockerImage, appPort, container.appPort)
+   }
 
   }
 
