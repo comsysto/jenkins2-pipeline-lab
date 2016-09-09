@@ -3,7 +3,7 @@
   hosts: all
   sudo: True
   vars:
-    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step','htmlpublisher']
+    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
   roles:
     - users
     - git

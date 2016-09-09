@@ -6,14 +6,8 @@ node {
   }
 
   stage("Build") {
-    sh "./gradlew build"
-/*    publishHTML(target: [
-            allowMissing         : false,
-            alwaysLinkToLastBuild: true,
-            keepAll              : false,
-            reportDir            : 'build/reports/tests',
-            reportFiles          : 'test/index.html',
-            reportName           : 'Unit tests report'])  */
+    sh "./gradlew clean build"
+    junit '**/build/test-results/*/*.xml'
   }
 
   stage("Deploy") {
@@ -27,7 +21,6 @@ node {
   stage("Run") {
     sshagent(credentials: ['jenkins-ci']) {
       sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
-
     }
   }
 
