@@ -45,11 +45,20 @@
     register: job_list
     changed_when: false
 
-  - name: Copy jenkins pipeline job xml
+  - name: Copy jenkins pipeline job0 xml
     retries: 5
     copy: src=../jenkins-pipeline-cs-lab-job.xml dest=/etc/jenkins-pipeline-cs-lab-job.xml owner=jenkins
 
-  - name: Create jenkins pipeline example job
+  - name: Create jenkins pipeline example job0
     retries: 5
     shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} create-job jenkins-pipeline-cs-lab <  /etc/jenkins-pipeline-cs-lab-job.xml"
     when: job_list.stdout.find('jenkins-pipeline-cs-lab') == -1
+
+  - name: Copy jenkins pipeline job1 xml
+    retries: 5
+    copy: src=../jenkins-pipeline-cs-lab-job1.xml dest=/etc/jenkins-pipeline-cs-lab-job1.xml owner=jenkins
+
+  - name: Create jenkins pipeline example job1
+    retries: 5
+    shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} create-job jenkins-pipeline-cs-lab-2 <  /etc/jenkins-pipeline-cs-lab-job1.xml"
+    when: job_list.stdout.find('jenkins-pipeline-cs-lab-2') == -1
