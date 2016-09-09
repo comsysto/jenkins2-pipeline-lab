@@ -62,9 +62,13 @@ node {
 
   }
 
-  stage("Smoke-Test") {
+  def checkEndpoint = { String url ->
     timeout(time: 30, unit: 'SECONDS') {
-      sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
-    }
+      sh "until $(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app=\"characterViewer\"\'"
+    }  
+  }
+
+  stage("Smoke-Test") {
+    checkEndpoint('http://192.168.42.11:8081')
   }
 }
