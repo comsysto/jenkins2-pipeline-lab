@@ -5,6 +5,7 @@
   vars:
     jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
     artifactory_database: postgres
+    docker_group_members: ['jenkins', 'vagrant']
   roles:
     - users
     - zzet.postgresql
@@ -12,3 +13,5 @@
     - git
     - karlmdavis.jenkins2
     - configure-jenkins
+    - angstwad.docker_ubuntu
+    - docker_registry
