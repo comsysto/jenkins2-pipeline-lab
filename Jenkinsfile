@@ -25,6 +25,19 @@ node {
     input "Continue with production deployment?"
   }
 
+stage("[PRODUCTION] Publish") {
+    def server = Artifactory.newServer('http://localhost:8081/artifactory', 'admin', 'password')
+    def uploadSpec = """{
+      "files": [
+        {
+          "pattern": "build/libs/workspace.jar",
+          "target": "ext-release-local/dnd5-char-viewer/dnd5-char-viewer.jar"
+        }
+      ]
+    }"""
+    server.upload(uploadSpec)
+  }
+
   stage("[PRODUCTION] Deployment") {
 
     sshagent(credentials: ['jenkins-ci']) {
@@ -39,6 +52,4 @@ node {
       sh 'until $(curl --silent --head --fail http://192.168.42.12:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.12:8080 | grep \'ng-app="characterViewer"\''
     }
   }
-
-
 }

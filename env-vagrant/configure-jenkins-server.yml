@@ -3,7 +3,7 @@
   hosts: all
   become: True
   vars:
-    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
+    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step', 'artifactory']
     artifactory_database: postgres
   roles:
     - users
