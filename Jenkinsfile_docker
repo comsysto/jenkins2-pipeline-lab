@@ -1,4 +1,32 @@
 #!groovy
+
+/*
+ * Closure used to switch out the current running container with the newer version.
+ * This is a very basic workflow that assumes that the names of the Docker containers
+ * are static so we can just stop the pre-existing container and replace it with a
+ * new container with the same name. This does mean we do not support fancy stuff
+ * like scalling the application. For this we would need a more advanced script.
+ */
+def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
+  sshagent(credentials: credentials) {
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
+
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
+  }
+}
+
+/*
+ * Closure to check if an endpoint is up and running.
+ * Only does a very basic test by using curl on the endpoint.
+ */
+def checkEndpoint = { String url ->
+  timeout(time: 30, unit: 'SECONDS') {
+    sh "until \$(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl ${url} | grep \'ng-app=\"characterViewer\"\'"
+  }
+}
+
 node {
 
   /*
@@ -6,7 +34,7 @@ node {
    */
   String gitCommitId
   def jenkinsServerName = '192.168.42.10'
-  def appServerName = '192.168.42.11'
+  def devServerName = '192.168.42.11'
 
   stage("Checkout") {
     git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
@@ -37,23 +65,6 @@ node {
             reportName           : 'Unit tests report'])  */
   }
 
-  /*
-   * Closure used to switch out the current running container with the newer version.
-   * This is a very basic workflow that assumes that the names of the Docker containers
-   * are static so we can just stop the pre-existing container and replace it with a
-   * new container with the same name. This does mean we do not support fancy stuff
-   * like scalling the application. For this we would need a more advanced script.
-   */
-  def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
-    sshagent(credentials: credentials) {
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
-
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
-    }
-  }
-
   stage("Deploy") {
     def credentials = ['jenkins-ci']
     def appPort = '8080'
@@ -64,21 +75,15 @@ node {
         [name: 'dndViewer03', serverPort: '8083']
     ]
     for (def container : containers) {
-      switchContainer(appServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
-    }
-  }
-
-  def checkEndpoint = { String url ->
-    timeout(time: 30, unit: 'SECONDS') {
-      sh "until \$(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl ${url} | grep \'ng-app=\"characterViewer\"\'"
+      switchContainer(devServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
     }
   }
 
   stage("Smoke-Test") {
     def endpoints = [
-        "http://${appServerName}:8081",
-        "http://${appServerName}:8082",
-        "http://${appServerName}:8083"
+        "http://${devServerName}:8081",
+        "http://${devServerName}:8082",
+        "http://${devServerName}:8083"
     ]
     for (def endpoint : endpoints) {
       checkEndpoint(endpoint)
