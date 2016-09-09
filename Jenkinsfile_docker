@@ -22,7 +22,7 @@ def switchContainer = { String serverName, List<String> credentials, String cont
  * Only does a very basic test by using curl on the endpoint.
  */
 def checkEndpoint = { String url ->
-  timeout(time: 30, unit: 'SECONDS') {
+  timeout(time: 90, unit: 'SECONDS') {
     sh "until \$(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl ${url} | grep \'ng-app=\"characterViewer\"\'"
   }
 }
