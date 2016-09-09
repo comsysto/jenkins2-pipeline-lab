@@ -27,90 +27,92 @@ def checkEndpoint = { String url ->
   }
 }
 
+/*
+ * We will use the git commit id as a unique identifier for our current build.
+ */
+String gitCommitId
+def jenkinsServerName = '192.168.42.10'
+def devServerName = '192.168.42.11'
+def prodServerName = '192.168.42.12'
+
+stage("[COMMIT] checkout")
 node {
+  git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
 
   /*
-   * We will use the git commit id as a unique identifier for our current build.
+   * As the current version of the plugin does not grant us direct access to
+   * output of the shell commands we have to pipe the output into a file and
+   * then read the file.
    */
-  String gitCommitId
-  def jenkinsServerName = '192.168.42.10'
-  def devServerName = '192.168.42.11'
-  def prodServerName = '192.168.42.12'
+  sh 'git rev-parse HEAD > git.id'
+  gitCommitId = readFile('git.id')
+}
 
-  stage("[COMMIT] checkout") {
-    git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
+def dockerRegistryPort = '5000'
+def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(0, 5)}"
 
-    /*
-     * As the current version of the plugin does not grant us direct access to
-     * output of the shell commands we have to pipe the output into a file and
-     * then read the file.
-     */
-    sh 'git rev-parse HEAD > git.id'
-    gitCommitId = readFile('git.id')
+stage("[COMMIT] Build+UnitTest")
+node {
+  sh "./gradlew clean build"
+  junit '**/build/test-results/*/*.xml'
+
+  sh "docker build . --tag ${dockerImage}"
+  sh "docker push ${dockerImage}"
+}
+
+stage("[DEVELOPMENT] Deployment")
+node {
+  def credentials = ['jenkins-ci']
+  def appPort = '8080'
+
+  def containers = [
+      [name: 'dndViewer01', serverPort: '9081'],
+      [name: 'dndViewer02', serverPort: '9082'],
+      [name: 'dndViewer03', serverPort: '9083']
+  ]
+  for (def container : containers) {
+    switchContainer(devServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
   }
+}
 
-  def dockerRegistryPort = '5000'
-  def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(0, 5)}"
-
-  stage("[COMMIT] Build+UnitTest") {
-    sh "./gradlew clean build"
-    junit '**/build/test-results/*/*.xml'
-
-    sh "docker build . --tag ${dockerImage}"
-    sh "docker push ${dockerImage}"
+stage("[DEVELOPMENT] SmokeTest")
+node {
+  def endpoints = [
+      "http://${devServerName}:9081",
+      "http://${devServerName}:9082",
+      "http://${devServerName}:9083"
+  ]
+  for (def endpoint : endpoints) {
+    checkEndpoint(endpoint)
   }
+}
 
-  stage("[DEVELOPMENT] Deployment") {
-    def credentials = ['jenkins-ci']
-    def appPort = '8080'
+stage("[DEVELOPMENT] Manual UI Test")
+input "Continue with production deployment?"
 
-    def containers = [
-        [name: 'dndViewer01', serverPort: '9081'],
-        [name: 'dndViewer02', serverPort: '9082'],
-        [name: 'dndViewer03', serverPort: '9083']
-    ]
-    for (def container : containers) {
-      switchContainer(devServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
-    }
+stage("[PRODUCTION] Deployment")
+node {
+  def credentials = ['jenkins-ci']
+  def appPort = '8080'
+
+  def containers = [
+      [name: 'dndViewer01', serverPort: '9081'],
+      [name: 'dndViewer02', serverPort: '9082'],
+      [name: 'dndViewer03', serverPort: '9083']
+  ]
+  for (def container : containers) {
+    switchContainer(prodServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
   }
+}
 
-  stage("[DEVELOPMENT] SmokeTest") {
-    def endpoints = [
-        "http://${devServerName}:9081",
-        "http://${devServerName}:9082",
-        "http://${devServerName}:9083"
-    ]
-    for (def endpoint : endpoints) {
-      checkEndpoint(endpoint)
-    }
-  }
-
-  stage("[DEVELOPMENT] Manual UI Test") {
-    input "Continue with production deployment?"
-  }
-
-  stage("[PRODUCTION] Deployment") {
-    def credentials = ['jenkins-ci']
-    def appPort = '8080'
-
-    def containers = [
-        [name: 'dndViewer01', serverPort: '9081'],
-        [name: 'dndViewer02', serverPort: '9082'],
-        [name: 'dndViewer03', serverPort: '9083']
-    ]
-    for (def container : containers) {
-      switchContainer(prodServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
-    }
-  }
-
-  stage("[PRODUCTION] SmokeTest") {
-    def endpoints = [
-        "http://${prodServerName}:9081",
-        "http://${prodServerName}:9082",
-        "http://${prodServerName}:9083"
-    ]
-    for (def endpoint : endpoints) {
-      checkEndpoint(endpoint)
-    }
+stage("[PRODUCTION] SmokeTest")
+node {
+  def endpoints = [
+      "http://${prodServerName}:9081",
+      "http://${prodServerName}:9082",
+      "http://${prodServerName}:9083"
+  ]
+  for (def endpoint : endpoints) {
+    checkEndpoint(endpoint)
   }
 }
