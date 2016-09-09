@@ -36,20 +36,28 @@ node {
             reportName           : 'Unit tests report'])  */
   }
 
-  def switchContainer = { String serverName, String containerName, String dockerImageToUse, String appPort, String serverPort ->
+  def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
+    sshagent(credentials: credentials {
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
   
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
+    }
   }
 
   stage("Deploy") {
+    def serverName = '192.168.42.11'
+    def credentials = ['jenkins-ci']
+    def appPort = '8080'
+    def containers = [
+        [name: 'dndViewer01', serverPort: '8081'],
+        [name: 'dndViewer02', serverPort: '8082'],
+        [name: 'dndViewer03', serverPort: '8083'],
+      }
 
-    sshagent(credentials: ['jenkins-ci']) {
-      switchContainer('192.168.42.11', 'dndViewer01', dockerImage, '8080', '8080')
-      switchContainer('192.168.42.11', 'dndViewer02', dockerImage, '8080', '8081')
-      switchContainer('192.168.42.11', 'dndViewer03', dockerImage, '8080', '8082')
+    for (def container : containers) {
+      switchContainer(serverName, credentials, container.name, dockerImage, appPort, container.appPort)
     }
   }
 
