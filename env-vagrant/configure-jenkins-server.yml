@@ -1,7 +1,7 @@
 ---
 - name: Configure jenkins server
   hosts: all
-  sudo: True
+  become: True
   vars:
     jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
   roles:

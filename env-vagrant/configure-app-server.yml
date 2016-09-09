@@ -1,6 +1,6 @@
 ---
 - name: Configure app server
   hosts: all
-  sudo: True
+  become: True
   roles:
     - users
