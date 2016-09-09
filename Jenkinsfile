@@ -18,7 +18,7 @@ node {
     gitCommitId = readFile('git.id')
   }
 
-  def dockerTag = "192.168.42.10:5000/dndviewer:${shortCommitId()}""
+  def dockerTag = "192.168.42.10:5000/dndviewer:${shortCommitId()}"
 
   stage("Build") {
     sh "./gradlew clean build"
