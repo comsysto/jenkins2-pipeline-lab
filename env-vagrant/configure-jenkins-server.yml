@@ -4,8 +4,11 @@
   become: True
   vars:
     jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
+    artifactory_database: postgres
   roles:
     - users
+    - zzet.postgresql
+    - bbaassssiiee.artifactory
     - git
     - karlmdavis.jenkins2
     - configure-jenkins

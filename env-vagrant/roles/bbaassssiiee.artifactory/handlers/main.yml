@@ -1,0 +1,14 @@
+---
+# handlers file for bbaassssiiee.artifactory
+- name: 'start artifactory'
+  become: yes
+  service: name=artifactory state=started
+  tags:
+    - artifactory
+    - init
+
+- name: 'restart artifactory'
+  become: yes
+  service: name=artifactory state=restarted
+  tags:
+    - artifactory
