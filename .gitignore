@@ -2,3 +2,4 @@
 .vagrant/
 ssh-config/
 *.retry
+*.iml
