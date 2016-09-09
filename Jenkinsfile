@@ -18,7 +18,7 @@ node {
     gitCommitId = readFile('git.id')
   }
 
-  def dockerTag = "192.168.42.10:5000/dndviewer:${shortCommitId()}"
+  def dockerTag = "192.168.42.10:5000/dndviewer:${gitCommitId.substring(0, 5)}"
 
   stage("Build") {
     sh "./gradlew clean build"
@@ -55,12 +55,5 @@ node {
     timeout(time: 30, unit: 'SECONDS') {
       sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
     }
-  }
-
-  String shortCommitId() {
-    if (gitCommitId) {
-      gitCommitId.substring(0, 5)
-    }
-    null
   }
 }
