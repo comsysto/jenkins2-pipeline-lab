@@ -8,11 +8,11 @@
 
 ### Setup your local environment
 
-#### Create & provision vagrant boxes
+#### 1. Create & provision vagrant boxes
 
      vagrant up
 
-You need to choose your network for bridging.
+You need to choose your network for bridging. Mostly option 1)
 
 
 #### Configure ssh for your vagrant boxes
@@ -20,11 +20,9 @@ You need to choose your network for bridging.
     ./scripts/configure-ssh.sh
 
 
-#### Configure Jenkins ssh-agent plugin
+### Let's try it
 
-    * Goto: http://localhost:18080/credentials/store/system/domain/_/
-    * Configure jenkins credentials for ssh agent
-    ** TODOD
+* http://localhost:18080/ 
 
 
 ### Links & References

@@ -1,87 +1,44 @@
 #!groovy
 node {
-
-  /*
-   * We will use the git commit id as a unique identifier for our current build.
-   */
-  String gitCommitId
-  def jenkinsServerName = '192.168.42.10'
-  def appServerName = '192.168.42.11'
-
-  stage("Checkout") {
+  stage("[COMMIT] Build+UnitTest") {
     git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
-
-    /*
-     * As the current version of the plugin does not grant us direct access to
-     * output of the shell commands we have to pipe the output into a file and
-     * then read the file.
-     */
-    sh 'git rev-parse HEAD > git.id'
-    gitCommitId = readFile('git.id')
-  }
-
-  def dockerRegistryPort = '5000'
-  def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(0, 5)}"
-
-  stage("Build") {
     sh "./gradlew clean build"
-    sh "docker build . --tag ${dockerImage}"
-    sh "docker push ${dockerImage}"
-
-/*    publishHTML(target: [
-            allowMissing         : false,
-            alwaysLinkToLastBuild: true,
-            keepAll              : false,
-            reportDir            : 'build/reports/tests',
-            reportFiles          : 'test/index.html',
-            reportName           : 'Unit tests report'])  */
+    junit '**/build/test-results/*/*.xml'
   }
 
-  /*
-   * Closure used to switch out the current running container with the newer version.
-   * This is a very basic workflow that assumes that the names of the Docker containers
-   * are static so we can just stop the pre-existing container and replace it with a
-   * new container with the same name. This does mean we do not support fancy stuff
-   * like scalling the application. For this we would need a more advanced script.
-   */
-  def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
-    sshagent(credentials: credentials) {
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
-  
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
+  stage("[DEVELOPMENT] Deployment") {
+
+    sshagent(credentials: ['jenkins-ci']) {
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 mkdir -p dnd5-char-viewer'
+      sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.11:dnd5-char-viewer/'
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
     }
   }
 
-  stage("Deploy") {
-    def credentials = ['jenkins-ci']
-    def appPort = '8080'
-   
-    def containers = [
-        [name: 'dndViewer01', serverPort: '8081'],
-        [name: 'dndViewer02', serverPort: '8082'],
-        [name: 'dndViewer03', serverPort: '8083']
-    ]
-    for (def container : containers) {
-      switchContainer(appServerName, credentials, container.name, dockerImage, appPort, container.serverPort)
+  stage("[DEVELOPMENT] SmokeTest") {
+    timeout(time: 60, unit: 'SECONDS') {
+      sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
     }
   }
 
-  def checkEndpoint = { String url ->
-    timeout(time: 30, unit: 'SECONDS') {
-      sh "until \$(curl --silent --head --fail ${url} > /dev/null); do printf \'.\'; sleep 1; done; curl ${url} | grep \'ng-app=\"characterViewer\"\'"
-    }  
+  stage("[DEVELOPMENT] Manual UI Test") {
+    input "Continue with production deployment?"
   }
 
-  stage("Smoke-Test") {
-    def endpoints = [
-        "http://${appServerName}:8081",
-        "http://${appServerName}:8082",
-        "http://${appServerName}:8083"
-    ]
-    for (def endpoint : endpoints) {
-      checkEndpoint(endpoint)
+  stage("[PRODUCTION] Deployment") {
+
+    sshagent(credentials: ['jenkins-ci']) {
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.12 mkdir -p dnd5-char-viewer'
+      sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.12:dnd5-char-viewer/'
+      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.12 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
     }
   }
+
+  stage("[PRODUCTION] SmokeTest") {
+    timeout(time: 60, unit: 'SECONDS') {
+      sh 'until $(curl --silent --head --fail http://192.168.42.12:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.12:8080 | grep \'ng-app="characterViewer"\''
+    }
+  }
+
+
 }

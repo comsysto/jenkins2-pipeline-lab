@@ -1,15 +1,14 @@
 ---
 - name: Configure jenkins server
   hosts: all
-  sudo: True
+  become: True
   vars:
-    - jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step','htmlpublisher']
-    - docker_group_members: ['jenkins', 'vagrant']
-
+    jenkins_plugins_extra: ['cloudbees-folder','ssh-agent','workflow-scm-step']
+    artifactory_database: postgres
   roles:
     - users
+    - zzet.postgresql
+    - bbaassssiiee.artifactory
     - git
     - karlmdavis.jenkins2
     - configure-jenkins
-    - angstwad.docker_ubuntu
-    - docker_registry

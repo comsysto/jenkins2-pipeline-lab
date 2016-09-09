@@ -22,14 +22,18 @@
   - name: List Credentials
     shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} list-credentials system::system::jenkins"
     register: credentials_list
+    retries: 5
     changed_when: false
 
   - name: Copy credentials config files
+    retries: 5
     copy: src=../credentials-jenkins-ci.xml dest=/etc/credentials-jenkins-ci.xml owner=jenkins
 
   - name: Create new credentials for jenkins plugins
     shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} create-credentials-by-xml system::system::jenkins '(global)' <  /etc/credentials-jenkins-ci.xml"
+    retries: 5
     when: credentials_list.stdout.find('jenkins-ci') == -1
+
 
     ########################################
     # Create an example pipeline job
@@ -37,12 +41,15 @@
 
   - name: List Jobs
     shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} list-jobs"
+    retries: 5
     register: job_list
     changed_when: false
 
   - name: Copy jenkins pipeline job xml
+    retries: 5
     copy: src=../jenkins-pipeline-cs-lab-job.xml dest=/etc/jenkins-pipeline-cs-lab-job.xml owner=jenkins
 
   - name: Create jenkins pipeline example job
+    retries: 5
     shell: "java -jar /opt/jenkins/jenkins-cli.jar -s http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }} create-job jenkins-pipeline-cs-lab <  /etc/jenkins-pipeline-cs-lab-job.xml"
     when: job_list.stdout.find('jenkins-pipeline-cs-lab') == -1
