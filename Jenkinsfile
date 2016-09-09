@@ -36,18 +36,20 @@ node {
             reportName           : 'Unit tests report'])  */
   }
 
-  stage("Deploy") {
-    def serverName = '192.168.42.11'
-    def serverPort = '8080'
-    def appPort = '8080'
-    def containerName = 'dndViewer'
-
-    sshagent(credentials: ['jenkins-ci']) {
+  def switchContainer = { String serverName, String containerName, String dockerImage, String appPort, String serverPort ->
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImage}"
-
+  
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImage}"
+  }
+
+  stage("Deploy") {
+
+    sshagent(credentials: ['jenkins-ci']) {
+      switchContainer('192.168.42.11', 'dndViewer01', dockerImage, '8080', '8080')
+      switchContainer('192.168.42.11', 'dndViewer02', dockerImage, '8080', '8081')
+      switchContainer('192.168.42.11', 'dndViewer03', dockerImage, '8080', '8082')
     }
   }
 
