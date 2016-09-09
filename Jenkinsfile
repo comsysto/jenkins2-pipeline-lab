@@ -36,12 +36,12 @@ node {
             reportName           : 'Unit tests report'])  */
   }
 
-  def switchContainer = { String serverName, String containerName, String dockerImage, String appPort, String serverPort ->
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImage}"
+  def switchContainer = { String serverName, String containerName, String dockerImageToUse, String appPort, String serverPort ->
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
   
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImage}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
   }
 
   stage("Deploy") {
