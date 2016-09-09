@@ -46,7 +46,7 @@ node {
     }
   }
 
-  stage(name: "Deploy", concurrency: 1) {
+  stage("Deploy") {
     def serverName = '192.168.42.11'
     def credentials = ['jenkins-ci']
     def appPort = '8080'
