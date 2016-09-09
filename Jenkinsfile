@@ -18,12 +18,14 @@ node {
     gitCommitId = readFile('git.id')
   }
 
-  def dockerTag = "192.168.42.10:5000/dndviewer:${gitCommitId.substring(5)}"
+  def jenkinsServerName = '192.168.42.10'
+  def dockerRegistryPort = '5000'
+  def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(5)}"
 
   stage("Build") {
     sh "./gradlew clean build"
-    sh "docker build . --tag ${dockerTag}"
-    sh "docker push ${dockerTag}"
+    sh "docker build . --tag ${dockerImage}"
+    sh "docker push ${dockerImage}"
 
 /*    publishHTML(target: [
             allowMissing         : false,
@@ -45,7 +47,7 @@ node {
 
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImage}"
     }
   }
 
