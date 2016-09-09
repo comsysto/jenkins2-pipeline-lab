@@ -1,7 +1,7 @@
 Vagrant.configure(2) do |config|
   config.vm.network :public_network
   #config.vm.box = "alonsodomin/ubuntu-trusty64-java8"
-    
+
   config.vm.define "jenkins" do |jenkins|
     jenkins.vm.box = "alonsodomin/ubuntu-trusty64-java8"
     jenkins.vm.network "private_network", ip: "192.168.42.10"

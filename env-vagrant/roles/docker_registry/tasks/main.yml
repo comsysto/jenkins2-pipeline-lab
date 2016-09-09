@@ -1,0 +1,8 @@
+---
+  - name: "deploy Docker Registry container"
+    docker:
+      name: "registry"
+      image: "registry:2"
+      ports:
+        - "5000:5000"
+    become: true
