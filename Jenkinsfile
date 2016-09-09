@@ -4,7 +4,7 @@ node {
   /*
    * We will use the git commit id as a unique identifier for our current build.
    */
-  def gitCommitId
+  String gitCommitId
 
   stage("Checkout") {
     git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
@@ -18,7 +18,7 @@ node {
     gitCommitId = readFile('git.id')
   }
 
-  def dockerTag = "192.168.42.10:5000/dndviewer:${gitCommitId.substring(0, 5)}"
+  def dockerTag = "192.168.42.10:5000/dndviewer:${gitCommitId}"
 
   stage("Build") {
     sh "./gradlew clean build"
