@@ -35,19 +35,17 @@ node {
   }
 
   stage("Deploy") {
+    def serverName = '192.168.42.11'
+    def serverPort = '8080'
+    def appPort = '8080'
+    def containerName = 'dndViewer'
 
     sshagent(credentials: ['jenkins-ci']) {
-      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 mkdir -p dnd5-char-viewer'
-      sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.11:dnd5-char-viewer/'
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerTag}"
 
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 docker pull ${dockerTag}"
-    }
-  }
-
-  stage("Run") {
-    sshagent(credentials: ['jenkins-ci']) {
-      sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
-
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort}"
     }
   }
 
