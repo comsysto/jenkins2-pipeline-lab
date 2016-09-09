@@ -56,8 +56,7 @@ node {
      [name: 'dndViewer02', serverPort: '8082'],
      [name: 'dndViewer03', serverPort: '8083']
    ]
-
-   for (def containter : containers) {
+   for (def container : containers) {
      switchContainer(serverName, credentials, container.name, dockerImage, appPort, container.appPort)
    }
 
