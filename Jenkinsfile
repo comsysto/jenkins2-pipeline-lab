@@ -1,7 +1,7 @@
 #!groovy
 node {
   stage("[COMMIT] Build+UnitTest") {
-    git branch: 'feature/jenkins-poll-test', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
+    git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
     sh "./gradlew clean build"
     junit '**/build/test-results/*/*.xml'
   }
@@ -30,7 +30,7 @@ stage("[PRODUCTION] Publish") {
     def uploadSpec = """{
       "files": [
         {
-          "pattern": "build/libs/workspace.jar",
+          "pattern": "build/libs/dnd5-char-viewer.jar",
           "target": "ext-release-local/dnd5-char-viewer/dnd5-char-viewer.jar"
         }
       ]
