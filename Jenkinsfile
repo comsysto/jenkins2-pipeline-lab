@@ -20,7 +20,7 @@ node {
 
   def jenkinsServerName = '192.168.42.10'
   def dockerRegistryPort = '5000'
-  def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(5)}"
+  def dockerImage = "${jenkinsServerName}:${dockerRegistryPort}/dndviewer:${gitCommitId.substring(0, 5)}"
 
   stage("Build") {
     sh "./gradlew clean build"
@@ -43,7 +43,7 @@ node {
     def containerName = 'dndViewer'
 
     sshagent(credentials: ['jenkins-ci']) {
-      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerTag}"
+      sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImage}"
 
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
       sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
