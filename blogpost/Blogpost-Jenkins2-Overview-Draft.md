@@ -1,4 +1,6 @@
-Blog post: - introduction (Jenkins as most used CI server)
+Blog post: 
+
+- introduction (Jenkins as most used CI server)
 - what's new in v2 vs v1
 - UI (current changes and Blue Ocean theme)
     - changes in Jenkins UI
