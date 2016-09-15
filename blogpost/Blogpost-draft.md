@@ -107,7 +107,39 @@ After the project has been built successfully and passed the stage **[PRODUCTION
 ![](images/artifactory.png)
 
 #### Deploying Docker containers
-* Docker pipeline in detail
+In the now let's take a look at our second deployment pipeline. This one deployes
+our application as a Docker container. (Admittedly just because we can.) The more
+interesting part of this second pipeline is that we now show of some of the things
+we get by our pipeline definition beeing Groovy code.
+
+```groovy
+def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
+  sshagent(credentials: credentials) {
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker pull ${dockerImageToUse}"
+
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker stop ${containerName} || true"
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker rm ${containerName} || true"
+    sh "ssh -o StrictHostKeyChecking=no -l ubuntu ${serverName} docker run -d --name ${containerName} -p ${serverPort}:${appPort} ${dockerImageToUse}"
+  }
+}
+```
+
+The first thing is ``def switchContainer``. This is a Groovy variable declaration. As should
+be obvious to most being able to define variables and reference them in your script is a
+good way to make your script more maintainable as it reduces the parts that change. For example
+if we define variables for the IP addresses of our target server instead of repeating them
+again and again in the script we will have a lot easier time if we ever need to change them.
+
+The next part (what we assigne the variable) is a Groovy Closure. This is Groovy's
+way of doing functional programming. If you are more familiar with Java this is kind
+of like the new Lambdas that where added in Java 8. What this allows us to do is
+reuse our code in multiple places. The code to start our Docker container is on a
+fundamental level the same for the DEVELOPMENT environment and the PRODUCTION environment.
+So we want to refactor out a function to do this instead of repeating the code in
+multiple places.
+
+Also our Closure uses a list of variables. Everything before ``->`` is a varaible defined
+to be used in the Closure. These are then used in the body of the Closure.
 
 ### Conclusion / Summary
 <a name="conclusion"/>
