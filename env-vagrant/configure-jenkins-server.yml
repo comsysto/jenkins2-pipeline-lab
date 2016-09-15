@@ -12,6 +12,6 @@
     - bbaassssiiee.artifactory
     - git
     - karlmdavis.jenkins2
-    - configure-jenkins
     - angstwad.docker_ubuntu
     - docker_registry
+    - configure-jenkins

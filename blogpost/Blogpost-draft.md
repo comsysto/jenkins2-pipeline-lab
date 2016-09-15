@@ -124,6 +124,8 @@ them but we could continue to keep our source code clean from Jenkins' configura
 As in most scenarios the number of parallel deployment environments is limited
 having multiple deployment pipelines might be not possible to beginn with.
 
+### Acknowlegements
+* names of the guys we took the Ansible roles from. (Just to be fair and avoid trouble)
 
 
 ##### Some references:
