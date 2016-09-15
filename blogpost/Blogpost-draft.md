@@ -46,10 +46,12 @@ requirement to put the ``Jenkinsfile`` into the actual project sources, which we
 [conclusion](#conclusion)).
 
 
-#### Deploying Docker containers
-* Docker pipeline in detail
-
 #### Deploying Jars
+
+<!--
+We need to reformulate the starting sentence.
+-->
+
 As an alternative to the dockerized deployment, it's of course possible to deploy the whole application the
 old-fashined way, running directly on the target node. In our case, this is made easy by the fact that the sample
 application is a Spring Boot application that packages its whole runtime environment (except for the JRE, of course,
@@ -103,6 +105,9 @@ After the project has been built successfully and passed the stage **[PRODUCTION
 ``http://localhost:28080/artifactory``. The repository should look like this:
 
 ![](images/artifactory.png)
+
+#### Deploying Docker containers
+* Docker pipeline in detail
 
 ### Conclusion / Summary
 <a name="conclusion"/>
