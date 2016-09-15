@@ -116,6 +116,14 @@ After a lot of discussion, however, we agreed that we do not consider this a ver
 * When building 3rd-party code, it is required to fork it and add a Jenkinsfile
 * It puts information about the intended target environment into a build that should be agnostic to such information
 
+A possible way around this could be to use git's submodule feature. This would
+allow us to have a git repository with the ``Jenkins`` file and have the repository
+with the actual code added as a submodule. With this we would lose the advantage
+of Jenkins finding new branches and automatically creating a build pipeline for
+them but we could continue to keep our source code clean from Jenkins' configuration.
+As in most scenarios the number of parallel deployment environments is limited
+having multiple deployment pipelines might be not possible to beginn with.
+
 
 
 ##### Some references:
