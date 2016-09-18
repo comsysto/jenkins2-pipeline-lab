@@ -38,7 +38,7 @@ So using a single job definition for creating build chains already makes life mo
 
 The following picture is a screenshot of the Jenkins Pipeline UI of our projects, showing the pipelines currently waiting for manual input at the quality gates.
 
-![](images/pipelineUI.png)
+![](images/pipeline.png)
 
 
 
