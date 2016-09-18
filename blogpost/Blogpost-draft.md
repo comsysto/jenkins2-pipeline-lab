@@ -17,7 +17,7 @@
 
 ### Jenkins Pipelines and Jenkinsfiles
 <a name=jenkinsPipelines/> 
-In the last blogpost about Jenkins 2.0[LINK], which focused on the configuration and administration of Jenkins 2.0, we gave a quick overview of the new Pipline plugin and its features. Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin. 
+In the last blogpost about Jenkins 2.0 **[LINK]**, which focused on the configuration and administration of Jenkins 2.0, we gave a quick overview of the new Pipline plugin and its features. Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin. 
 
 #### Freestyle Jobs vs. Pipelines
 <a name=freestyleVsPipelines/> 
@@ -38,7 +38,6 @@ So using a single job definition for creating build chains already makes life mo
 
 The following picture is a screenshot of the Jenkins Pipeline UI of our projects, showing the pipelines currently waiting for manual input at the quality gates.
 
-[HERE SCREENSHOT]
 ![](images/pipelineUI.png)
 
 
