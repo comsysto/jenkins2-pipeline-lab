@@ -36,7 +36,7 @@ So using a single job definition for creating build chains already makes life mo
 * Manual quality gates can be introduced into the workflow, where the pipeline process halts and waits for manual input.
 * More complex workflows can be designed which include forks, joins, loops and parallel executions.
 
-The following picture is a screenshot of the Jenkins Pipeline UI of our projects, showing the pipelines currently waiting for manual input at the quality gates.
+The following picture is a screenshot of the Jenkins Pipeline UI of our projects, showing the pipeline currently waiting for manual input at the quality gate.
 
 ![](images/pipeline.png)
 
