@@ -55,7 +55,7 @@ Another big advantage of the Pipeline plugin is the Pipeline as code feature
 
 As an example for a full-blown Jenkinsfile, the following code snipped shows the JAR deployment Jenkinsfile  of our project:
 
-'''groovy
+```groovy
 #!groovy
 
 stage("[COMMIT] Build+UnitTest")
@@ -113,7 +113,7 @@ node {
     sh 'until $(curl --silent --head --fail http://192.168.42.12:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.12:8080 | grep \'ng-app="characterViewer"\''
   }
 }
-'''
+```
 
 
 
