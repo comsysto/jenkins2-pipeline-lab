@@ -1,30 +1,28 @@
-# Jenkins 2.0 Pipelines
-## Subheading with even more buzzwords
+# JENKINS 2.0 (PART 2) - PIPELINES IN ACTION 
+## How to manage your delivery pipeline as code
 
-2-3 sentence abstract
-* Local CD environment vagrant, ansible
-* Pre-configured Jenkins Pipeline
-* Starting point to play with pipelines in production-like scenario
+----
 
-### Intro / Local environment
-* Short explanation of local sandbox infrastructure
-* Maybe a small/simple diagram showing VMs + Networking + App
-* Links to repos
+_Read our thoughts and experiences we made with Jenkins Pipelines in this blog post, or directly checkout our [github repository](https://github.com/comsysto/jenkins2-pipeline-lab) and see it in action._
 
-### Continuous Delivery scenario concept
-* Short explanation of the CD scenario we build
-* Maybe visualisation of stages + steps
+---- 
+
 
 ### Jenkins Pipelines and Jenkinsfiles
 <a name=jenkinsPipelines/> 
-In the last blogpost about Jenkins 2.0 **[LINK]**, which focused on the configuration and administration of Jenkins 2.0, we gave a quick overview of the new Pipline plugin and its features. Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin. 
+In the last blogpost about Jenkins 2.0 **[LINK]**, which focused on the configuration and administration of Jenkins 2.0, 
+we gave a quick overview of the new Pipline plugin and its features. 
+Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin. 
 
 #### Freestyle Jobs vs. Pipelines
 <a name=freestyleVsPipelines/> 
 
 The conventional way of building applications with Jenkins is to define a series of sequential executable steps, each configured as a freestyle job, and then trigger one
 after the other until the whole build process is completed. The chaining of freestyle jobs is usually done via the Jenkins UI, which makes changes and reconfigurations of 
-the job chain rather inconvenient. But fear not, the Jenkins Pipline plugin is here for the rescue! With the new plugin it becomes possible to orchestrate all workflow steps from commit to deployment within a single job. This job is defined using the Pipeline DSL (domain specific language), which is based on Groovy. Let's have a quick look at the vocabulary of the Pipeline DSL: in the following we have a listing of the three most important terms when it comes to writing pipeline scripts.
+the job chain rather inconvenient. But fear not, the Jenkins Pipeline plugin is here for the rescue! 
+With the new plugin it becomes possible to orchestrate all workflow steps from commit to deployment within a single job. 
+This job is defined using the Pipeline DSL (domain specific language), which is based on Groovy. 
+Let's have a quick look at the vocabulary of the Pipeline DSL: in the following we have a listing of the three most important terms when it comes to writing pipeline scripts.
 
 * **Stage**: stages are used to break your pipeline into logically distinct sections, which can include one or more build steps. All steps defined within a stage are then visualized as a unique segment in the Pipeline UI.
 * **Step**: build steps are the single executable tasks, which can be chained together in sequence to form stages.
@@ -41,18 +39,22 @@ The following picture is a screenshot of the Jenkins Pipeline UI of our projects
 ![](images/pipeline.png)
 
 
-
 #### Pipeline as Code
 <a name=pipelineAsCode/> 
 
-Another big advantage of the Pipeline plugin is the 'Pipeline as code' feature. Instead of defining a Pipeline job via the Jenkins UI, it is now possible to store the configuration in an external file (called Jenkinsfile), which can easily be put under version control. Jenkins can then be configured to automatically scan repositories for Jenkinsfiles and setup a new build pipeline accordingly. Having the project code as well as the build/deployment configuration under the same roof seems to be the new trend at the moment, but after some discussion on this topic, we still remain skeptical towards this approach (see [conclusion](#conclusion)). Despite our skepticism, the 'Pipeline as code' feature also offers some clear advantages that should not be neglected here:
+Another big advantage of the Pipeline plugin is the 'Pipeline as code' feature. Instead of defining a Pipeline job via the Jenkins UI, 
+it is now possible to store the configuration in an external file (called Jenkinsfile), which can easily be put under version control. 
+Jenkins can then be configured to automatically scan repositories for Jenkinsfiles and setup a new build pipeline accordingly. 
+Having the project code as well as the build/deployment configuration under the same roof seems to be the new trend at the moment, 
+but after some discussion on this topic, we still remain skeptical towards this approach (see [conclusion](#conclusion)). 
+Despite our skepticism, the 'Pipeline as code' feature also offers some clear advantages that should not be neglected here:
 
 * **Versioning of job definitions**: Putting the configuration under version control creates traceability and persistency
 * **Sharing and Reuse**: job definitions can be easily shared and reused for similar builds
 * **Automation**: New build pipeline are automatically created for new branches.
 * **Adaptation**: the build pipeline can easily be manipulated without touching the Jenkins UI
 
-As an example for a full-blown Jenkinsfile, the following code snipped shows the JAR deployment Jenkinsfile  of our project:
+As an example of a Jenkinsfile, the following code snipped shows the definition of our `COMMIT` stage where our deployable is build.  
 
 ```groovy
 #!groovy
@@ -62,55 +64,6 @@ node {
   git branch: 'master', poll: true, url: 'https://github.com/Endron/dnd5-char-viewer.git'
   sh "./gradlew clean build"
   junit '**/build/test-results/*/*.xml'
-}
-
-stage("[DEVELOPMENT] Deployment")
-node {
-  sshagent(credentials: ['jenkins-ci']) {
-    sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 mkdir -p dnd5-char-viewer'
-    sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.11:dnd5-char-viewer/'
-    sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
-  }
-}
-
-stage("[DEVELOPMENT] SmokeTest")
-node {
-  timeout(time: 60, unit: 'SECONDS') {
-    sh 'until $(curl --silent --head --fail http://192.168.42.11:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.11:8080 | grep \'ng-app="characterViewer"\''
-  }
-}
-
-stage("[DEVELOPMENT] Manual UI Test")
-input "Continue with production deployment?"
-
-stage("[PRODUCTION] Publish")
-node {
-  def server = Artifactory.newServer('http://localhost:8081/artifactory', 'admin', 'password')
-  def uploadSpec = """{
-    "files": [
-      {
-        "pattern": "build/libs/dnd5-char-viewer.jar",
-        "target": "ext-release-local/dnd5-char-viewer/dnd5-char-viewer.jar"
-      }
-    ]
-  }"""
-  server.upload(uploadSpec)
-}
-
-stage("[PRODUCTION] Deployment")
-node {
-  sshagent(credentials: ['jenkins-ci']) {
-    sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.12 mkdir -p dnd5-char-viewer'
-    sh 'scp -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@192.168.42.12:dnd5-char-viewer/'
-    sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.12 "cd ./dnd5-char-viewer; killall -9 java; java -jar *.jar 2>> /dev/null >> /dev/null &"'
-  }
-}
-
-stage("[PRODUCTION] SmokeTest")
-node {
-  timeout(time: 60, unit: 'SECONDS') {
-    sh 'until $(curl --silent --head --fail http://192.168.42.12:8080 > /dev/null); do printf \'.\'; sleep 1; done; curl http://192.168.42.12:8080 | grep \'ng-app="characterViewer"\''
-  }
 }
 ```
 
@@ -125,12 +78,8 @@ requirement to put the ``Jenkinsfile`` into the actual project sources, which we
 
 #### Deploying Jars
 
-<!--
-We need to reformulate the starting sentence.
--->
-
-As an alternative to the dockerized deployment, it's of course possible to deploy the whole application the
-old-fashined way, running directly on the target node. In our case, this is made easy by the fact that the sample
+As we saw already how a basic Jenkins file looks like and how to build our artifact, let's have a look at how to deploy it. 
+In our case, this is made easy by the fact that the sample
 application is a Spring Boot application that packages its whole runtime environment (except for the JRE, of course,
 but including its own web server).
 
@@ -171,7 +120,7 @@ stage("[PRODUCTION] Publish") {
 }
 ```
 Our Jenkins environment already has the required Artifactory plugin installed (please note that this doesn't come with
-Jenkins per default and normally needs to be installed manaully). While the recommended way to instantiate the 'server'
+Jenkins per default and normally needs to be installed manually). While the recommended way to instantiate the 'server'
 instance is to make it reference an Artifactory instance pre-configured in the Jenkins configuration, the example
 Jenkinsfile avoids this in favor of configuring the server directly. Of course, this is also a bad idea for a
 production build because it put the user name and password into the Jenkinsfile.
@@ -184,7 +133,7 @@ After the project has been built successfully and passed the stage **[PRODUCTION
 ![](images/artifactory.png)
 
 #### Deploying Docker containers
-In the now let's take a look at our second deployment pipeline. This one deployes
+In the now let's take a look at our second deployment pipeline. This one deploys
 our application as a Docker container. (Admittedly just because we can.) The more
 interesting part of this second pipeline is that we now show of some of the things
 we get by our pipeline definition beeing Groovy code.
@@ -250,7 +199,6 @@ of code. We then iterate over this list to bring up the container.
 
 ### Conclusion / Summary
 <a name="conclusion"/>
-* Bla bla what we learned
 
 #### Job configuration as code
 
@@ -309,11 +257,12 @@ have to write the commit ID to a file we then read using the ``readFile`` method
 From this is clear that there is still room for improvement of the DSL. 
 
 ### Acknowlegements
-* names of the guys we took the Ansible roles from. (Just to be fair and avoid trouble)
+* Thanks to Karl M. Davis the author of the [ansible role for Jenkins 2 setup](https://github.com/karlmdavis/ansible-jenkins2)
 
 
-##### Some references:
+### References:
 * https://dzone.com/articles/jenkins-pipeline-plugin-tutorial
 * https://jenkins.io/solutions/pipeline/
 * https://dzone.com/refcardz/continuous-delivery-with-jenkins-workflow
-* ...
+* https://github.com/karlmdavis/ansible-jenkins2
+* https://github.com/comsysto/jenkins2-pipeline-lab

@@ -1,9 +1,13 @@
 # jenkins2-pipeline-lab
 
+This repository provides you a local playground environment using Vagrant and Ansible to get started with Jenkins 2.
+In addition to Jenkins 2 to will get app servers VMs and an artifactory to build "real-world" examples.
+The pipelines described in our [Blogpost] are pre-configured and ready to run.
+
 ### Prerequisites
 
 * vagrant
-* ansible 2.0.2 (! only works with this version)
+* ansible 2.0.2 (!) only works with this version
 
 
 ### Setup your local environment
@@ -29,35 +33,3 @@ You need to choose your network for bridging. Mostly option 1)
 
 * https://jenkins.io/solutions/pipeline/
 * https://dzone.com/refcardz/continuous-delivery-with-jenkins-workflow
-
-
-### Jenkinsfile
-
-```
-    def gitCommit
-    stage('Checkout')
-    node {
-        // Get some code from a GitHub repository
-        git url: 'https://github.com/Endron/dnd5-char-viewer.git'
-        sh 'git rev-parse HEAD > git.id'
-        gitCommit = readFile('git.id')
-    }
-
-    stage('Build') 
-    node {
-        def dockerTag = "localhost:5000/dndviewer:${gitCommit}"
-        
-        sh "./gradlew clean build"
-        sh "docker build . --tag ${dockerTag}"
-        sh "docker push ${dockerTag}"
-    }
-
-    //checkpoint 'Completed CI'
-
-    stage ('Deploy') 
-    node {
-        sshagent(['jenkins']) {
-            sh 'ssh -o StrictHostKeyChecking=no -l ubuntu 192.168.42.11 uname -a'
-        }
-    }
-```
