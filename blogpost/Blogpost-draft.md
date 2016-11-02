@@ -1,32 +1,32 @@
-# JENKINS 2.0 (PART 2) - PIPELINES IN ACTION 
+# JENKINS 2.0 (PART 2) - PIPELINES IN ACTION
 ## How to manage your delivery pipeline as code
 
 ----
 
 _Read our thoughts and experiences we made with Jenkins Pipelines in this blog post, or directly checkout our [github repository](https://github.com/comsysto/jenkins2-pipeline-lab) and see it in action._
 
----- 
+----
 
 
 ### Jenkins Pipelines and Jenkinsfiles
-<a name=jenkinsPipelines/> 
-In the last blogpost about Jenkins 2.0 **[LINK]**, which focused on the configuration and administration of Jenkins 2.0, 
-we gave a quick overview of the new Pipline plugin and its features. 
-Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin. 
+<a name=jenkinsPipelines/>
+In the last blogpost about Jenkins 2.0 **[LINK]**, which focused on the configuration and administration of Jenkins 2.0,
+we gave a quick overview of the new Pipeline plugin and its features.
+Now we want to have a closer look at the capabilities of the Pipeline plugin and work out the major innovations and differences that are introduced by the plugin.
 
 #### Freestyle Jobs vs. Pipelines
-<a name=freestyleVsPipelines/> 
+<a name=freestyleVsPipelines/>
 
 The conventional way of building applications with Jenkins is to define a series of sequential executable steps, each configured as a freestyle job, and then trigger one
-after the other until the whole build process is completed. The chaining of freestyle jobs is usually done via the Jenkins UI, which makes changes and reconfigurations of 
-the job chain rather inconvenient. But fear not, the Jenkins Pipeline plugin is here for the rescue! 
-With the new plugin it becomes possible to orchestrate all workflow steps from commit to deployment within a single job. 
-This job is defined using the Pipeline DSL (domain specific language), which is based on Groovy. 
+after the other until the whole build process is completed. The chaining of freestyle jobs is usually done via the Jenkins UI, which makes changes and reconfigurations of
+the job chain rather inconvenient. But fear not, the Jenkins Pipeline plugin is here for the rescue!
+With the new plugin it becomes possible to orchestrate all workflow steps from commit to deployment within a single job.
+This job is defined using the Pipeline DSL (domain specific language), which is based on Groovy.
 Let's have a quick look at the vocabulary of the Pipeline DSL: in the following we have a listing of the three most important terms when it comes to writing pipeline scripts.
 
 * **Stage**: stages are used to break your pipeline into logically distinct sections, which can include one or more build steps. All steps defined within a stage are then visualized as a unique segment in the Pipeline UI.
 * **Step**: build steps are the single executable tasks, which can be chained together in sequence to form stages.
-* **Node**: nodes are wrappers for resource-intensive steps, which should be scheduled and executed in a separate workspace, in order to avoid negative impacts on the overall pipeline performance.
+* **Node**: nodes are wrappers for everything that should be scheduled and executed in a separate workspace. Additional node definitions may be used for resource-intensive steps which should be scheduled and executed in a separate workspace, in order to avoid negative impacts on the overall pipeline performance.
 
 So using a single job definition for creating build chains already makes life more convenient, but there is still more to it than that. The Pipeline plugin also offers new features that could not be realized so easily prior to Jenkins 2.0:
 
@@ -40,13 +40,13 @@ The following picture is a screenshot of the Jenkins Pipeline UI of our projects
 
 
 #### Pipeline as Code
-<a name=pipelineAsCode/> 
+<a name=pipelineAsCode/>
 
-Another big advantage of the Pipeline plugin is the 'Pipeline as code' feature. Instead of defining a Pipeline job via the Jenkins UI, 
-it is now possible to store the configuration in an external file (called Jenkinsfile), which can easily be put under version control. 
-Jenkins can then be configured to automatically scan repositories for Jenkinsfiles and setup a new build pipeline accordingly. 
-Having the project code as well as the build/deployment configuration under the same roof seems to be the new trend at the moment, 
-but after some discussion on this topic, we still remain skeptical towards this approach (see [conclusion](#conclusion)). 
+Another big advantage of the Pipeline plugin is the 'Pipeline as code' feature. Instead of defining a Pipeline job via the Jenkins UI,
+it is now possible to store the configuration in an external file (called Jenkinsfile), which can easily be put under version control.
+Jenkins can then be configured to automatically scan repositories for Jenkinsfiles and setup a new build pipeline accordingly.
+Having the project code as well as the build/deployment configuration under the same roof seems to be the new trend at the moment,
+but after some discussion on this topic, we still remain skeptical towards this approach (see [conclusion](#conclusion)).
 Despite our skepticism, the 'Pipeline as code' feature also offers some clear advantages that should not be neglected here:
 
 * **Versioning of job definitions**: Putting the configuration under version control creates traceability and persistency
@@ -78,7 +78,7 @@ requirement to put the ``Jenkinsfile`` into the actual project sources, which we
 
 #### Deploying Jars
 
-As we saw already how a basic Jenkins file looks like and how to build our artifact, let's have a look at how to deploy it. 
+As we saw already how a basic Jenkins file looks like and how to build our artifact, let's have a look at how to deploy it.
 In our case, this is made easy by the fact that the sample
 application is a Spring Boot application that packages its whole runtime environment (except for the JRE, of course,
 but including its own web server).
@@ -133,10 +133,10 @@ After the project has been built successfully and passed the stage **[PRODUCTION
 ![](images/artifactory.png)
 
 #### Deploying Docker containers
-In the now let's take a look at our second deployment pipeline. This one deploys
+Now let's take a look at our second deployment pipeline. This one deploys
 our application as a Docker container. (Admittedly just because we can.) The more
 interesting part of this second pipeline is that we now show of some of the things
-we get by our pipeline definition beeing Groovy code.
+we get by our pipeline definition being Groovy code.
 
 ```groovy
 def switchContainer = { String serverName, List<String> credentials, String containerName, String dockerImageToUse, String appPort, String serverPort ->
@@ -151,25 +151,25 @@ def switchContainer = { String serverName, List<String> credentials, String cont
 ```
 
 The first thing is ``def switchContainer``. This is a Groovy variable declaration. As should
-be obvious to most being able to define variables and reference them in your script is a
-good way to make your script more maintainable as it reduces the parts that change. For example
-if we define variables for the IP addresses of our target server instead of repeating them
-again and again in the script we will have a lot easier time if we ever need to change them.
+be obvious to most, being able to define variables and to reference them in your script is a
+good way to make your script more maintainable, as it reduces the parts that change. For example
+if we define variables for the IP addresses of our target server, instead of repeating them
+again and again in the script, we will have a lot easier time if we ever need to change them.
 
-The next part (what we assigne the variable) is a Groovy Closure. This is Groovy's
+The next part (what we assign the variable) is a Groovy Closure. This is Groovy's
 way of doing functional programming. If you are more familiar with Java this is kind
 of like the new Lambdas that where added in Java 8. What this allows us to do is
 reuse our code in multiple places. The code to start our Docker container is on a
 fundamental level the same for the DEVELOPMENT environment and the PRODUCTION environment.
-So we want to refactor out a function to do this instead of repeating the code in
+So we want to refactor out a function to do this, instead of repeating the code in
 multiple places.
 
-Also our Closure uses a list of variables. Everything before ``->`` is a varaible defined
+Also our Closure uses a list of variables. Everything before ``->`` is a variable, which is defined
 to be used in the Closure. These are then used in the body of the Closure. The body itself
 is a very basic script to pull a given Docker image to the server and replace a container
 with the given name with a new one using the new image.
 
-While this is already nice it is not yet showing of the real power of a higher programming
+While this is already nice, it is not yet showing of the real power of a higher programming
 language. For this we must move to where we invoke the Closure.
 
 ```groovy
@@ -189,10 +189,10 @@ node {
 }
 ```
 
-In our DEVELOPMENT environment we want to start three Docker container with the
+In our DEVELOPMENT environment we want to start three Docker containers with the
 application (named ``dndViewer01``, ``dndViewer02`` and ``dndviewer03``). And because we
 are using Groovy as the language for our Script we can do this in a loop. In our case
-we create a Map for each of our three container containing what is specific for it. That
+we create a Map for each of our three containers containing what is specific for it. That
 is its name and the port on the server it should be bound to. We then put these maps
 in a List. As we use Groovy's Map and List syntax this all happens in only a few lines
 of code. We then iterate over this list to bring up the container.
@@ -202,16 +202,16 @@ of code. We then iterate over this list to bring up the container.
 
 #### Job configuration as code
 
-The idea of having the configuration as code under version control is the one of
-the main selling points of the new pipeline plugin. And we think that this is
-something we will see more of in the future. This can help solve two old problems
+The idea of having the configuration as code under version control is one of
+the main selling points of the new pipeline plugin and we think that this is
+something we will see more of in the future. This can help to solve two old problems
 with CI pipelines:
 * How to share job definitions for similar builds
 * How to version job definitions
 We think that having the job definition in a git repository and using the established
 tools and workflows to make changes to them addresses these problems. As this is still
-in its infancy we cannot yet tell if this is the sollution and what new problems this
-might produce. But we think it to be a step in the right direction.
+in its infancy, we cannot tell yet, if this is the solution and what new problems this
+might produce. But we think of it as a step in the right direction.
 
 #### Location of the ``Jenkinsfile``
 
@@ -227,9 +227,9 @@ A possible way around this could be to use git's submodule feature. This would
 allow us to have a git repository with the ``Jenkins`` file and have the repository
 with the actual code added as a submodule. With this we would lose the advantage
 of Jenkins finding new branches and automatically creating a build pipeline for
-them but we could continue to keep our source code clean from Jenkins' configuration.
-As in most scenarios the number of parallel deployment environments is limited
-having multiple deployment pipelines might be not possible to beginn with.
+them, but we could continue to keep our source code clean from Jenkins' configuration.
+As in most scenarios, the number of parallel deployment environments is limited
+having multiple deployment pipelines might be not possible to begin with.
 
 #### Missing things
 
@@ -254,7 +254,7 @@ Because the ``git`` method has no return type we have to use git from the shell
 to get the commit ID. But because the ``sh`` method also has no return value we
 have to write the commit ID to a file we then read using the ``readFile`` method.
 
-From this is clear that there is still room for improvement of the DSL. 
+From this it is clear that there is still room for improvement of the DSL.
 
 ### Acknowlegements
 * Thanks to Karl M. Davis the author of the [ansible role for Jenkins 2 setup](https://github.com/karlmdavis/ansible-jenkins2)
